@@ -1,0 +1,60 @@
+-- 1. Топ-5 мемов с наибольшим охватом за 2020 год
+SELECT m.Name, f.Popularity_year, f.Approximate_coverage
+FROM Meme m
+JOIN Fame f ON m.meme_id = f.meme_id
+WHERE f.Popularity_year = 2020
+ORDER BY f.Approximate_coverage DESC
+LIMIT 5;
+
+-- 2. Средний охват по жанрам, только если охват больше 100, отсортировано по убыванию
+SELECT m.Genre, ROUND(AVG(f.Approximate_coverage)) AS Avg_Coverage
+FROM Meme m
+JOIN Fame f ON m.meme_id = f.meme_id
+WHERE f.Approximate_coverage > 100
+GROUP BY m.Genre
+ORDER BY Avg_Coverage DESC;
+
+-- 3. Мемы с политической окраской, отсортированные по теме политики и охвату
+SELECT m.Name, p.Theme AS Political_Topic, f.Approximate_coverage
+FROM Meme m
+JOIN Pop_Culture_References pc ON m.meme_id = pc.meme_id
+JOIN Political_Orientation p ON pc.politics_id = p.politics_id
+JOIN Fame f ON m.meme_id = f.meme_id
+WHERE p.Presence = 1
+ORDER BY p.Theme, f.Approximate_coverage DESC;
+
+-- 4. Языки распространения мемов и число мемов для каждого языка
+SELECT dg.Language, COUNT(DISTINCT m.meme_id) AS Meme_Count
+FROM Distribution_Geography dg
+JOIN Fame f ON dg.country_id = f.country_id
+JOIN Meme m ON f.meme_id = m.meme_id
+GROUP BY dg.Language
+ORDER BY Meme_Count DESC;
+
+-- 5. Средняя длина названия мема по платформам (связь через meme_id)
+SELECT op.Name AS Platform, ROUND(AVG(LENGTH(m.Name))) AS Avg_Name_Length
+FROM Origin_Platform op
+JOIN Meme m ON op.platform_id = m.meme_id
+GROUP BY op.Name
+ORDER BY Avg_Name_Length DESC
+LIMIT 5;
+
+-- 6. Мемы, созданные после 2015 года, с охватом выше среднего
+WITH AvgCov AS (
+    SELECT AVG(Approximate_coverage) AS avg_val FROM Fame
+)
+SELECT m.Name, f.Approximate_coverage
+FROM Meme m
+JOIN Fame f ON m.meme_id = f.meme_id
+JOIN AvgCov ac ON 1=1
+WHERE m.Creation_year > 2015
+  AND f.Approximate_coverage > ac.avg_val;
+
+-- 7. Кол-во мемов по формату, отсортировано по популярности (по общей сумме охвата)
+SELECT fr.Name AS Format, COUNT(m.meme_id) AS Meme_Count, SUM(f.Approximate_coverage) AS Total_Coverage
+FROM Format fr
+JOIN Meme m ON m.meme_id = fr.meme_id
+JOIN Fame f ON m.meme_id = f.meme_id
+GROUP BY fr.Name
+HAVING Total_Coverage > 0
+ORDER BY Total_Coverage DESC;

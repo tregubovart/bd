@@ -1,0 +1,96 @@
+@startuml
+hide circle
+skinparam linetype ortho
+
+entity EquipmentCategories {
+  * category_id : INT
+  --
+  name         : VARCHAR(100)
+  description  : TEXT
+}
+
+entity Suppliers {
+  * supplier_id : INT
+  --
+  name         : VARCHAR(150)
+  phone        : VARCHAR(50)
+  email        : VARCHAR(100)
+}
+
+entity EquipmentItems {
+  * item_id     : INT
+  --
+  name         : VARCHAR(150)
+  category_id  : INT
+  supplier_id  : INT
+}
+
+entity MembershipPlans {
+  * plan_id     : INT
+  --
+  name         : VARCHAR(100)
+  price        : DECIMAL(10,2)
+}
+
+entity Members {
+  * member_id   : INT
+  --
+  full_name    : VARCHAR(150)
+  email        : VARCHAR(150)
+  plan_id      : INT
+}
+
+entity Staff {
+  * staff_id    : INT
+  --
+  full_name    : VARCHAR(150)
+  role         : VARCHAR(50)
+}
+
+entity PurchaseOrders {
+  * order_id    : INT
+  --
+  supplier_id  : INT
+  order_date   : DATE
+}
+
+entity EquipmentLoans {
+  * loan_id     : INT
+  --
+  member_id    : INT
+  item_id      : INT
+  checkout_date: DATETIME
+}
+
+entity TrainingSessions {
+  * session_id  : INT
+  --
+  title        : VARCHAR(150)
+  trainer_id   : INT
+  start_time   : DATETIME
+}
+
+entity SessionBookings {
+  * booking_id  : INT
+  --
+  session_id   : INT
+  member_id    : INT
+}
+
+' Relationships
+EquipmentCategories ||--o{ EquipmentItems : "category_id"
+Suppliers            ||--o{ EquipmentItems : "supplier_id"
+
+MembershipPlans      ||--o{ Members        : "plan_id"
+
+Suppliers            ||--o{ PurchaseOrders : "supplier_id"
+
+Members              ||--o{ EquipmentLoans : "member_id"
+EquipmentItems       ||--o{ EquipmentLoans : "item_id"
+
+Staff                ||--o{ TrainingSessions : "trainer_id"
+
+TrainingSessions     ||--o{ SessionBookings : "session_id"
+Members              ||--o{ SessionBookings : "member_id"
+
+@enduml
